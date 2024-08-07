@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
+import db from './app/models/index.js';
+
 import IClockRouter from './app/routes/iclock.js';
 
 const port = process.env.APP_PORT
@@ -22,4 +24,6 @@ app.use((req, res, next) => { // Body is always text
 
 app.use("/iclock", IClockRouter);
 
-app.listen(port, () => console.log(`App listening on port http://localhost:${port}!`) )
+db.database.sync({alter: true}).then(()=>{
+    app.listen(port, () => console.log(`App listening on port http://localhost:${port}!`) )
+});
