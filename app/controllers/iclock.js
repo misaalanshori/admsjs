@@ -5,6 +5,7 @@
 
 import util from 'util';
 import db from '../models/index.js';
+import ADMSServices from '../services/adms.services.js';
 // let ATTLOGStamp = 0;
 // let OPERLOGStamp = 0;
 // let ATTPHOTOStamp = 0;
@@ -126,6 +127,11 @@ const IClockControllers = {
      */
     handshake: async (req, res) => {
         const serialNumber = req.query.SN;
+        const machine = await ADMSServices.checkMachineWhitelist(serialNumber);
+        if (!machine) {
+            console.log("Unrecognized Handshake Attempt from: " + serialNumber);
+            return res.status(403).send("Not Recognized");
+        };
         admsDBMachineHeartBeat(serialNumber);
         const response = [
             `GET OPTION FROM: ${serialNumber}`,
@@ -138,7 +144,7 @@ const IClockControllers = {
             `TransTimes=00:00;23:59`,
             `TransInterval=1`,
             `TransFlag=TransData ${TransFlags.join("\t")}`,
-            `TimeZone=7`,
+            `TimeZone=${machine.timezone}`,
             `Realtime=1`,
             `Encrypt=None`,
         ].join("\r\n")
@@ -158,6 +164,7 @@ const IClockControllers = {
      */
     receiveData: async (req, res) => {
         const serialNumber = req.query.SN;
+        if (!await ADMSServices.checkMachineWhitelist(serialNumber)) return res.status(403).send("Not Recognized");
         const table = req.query.table;
         const bodyLines = req.body.replace(/^[ \n\r\f]+|[ \n\r\f]+$/g, '').split("\n");
 
@@ -178,6 +185,7 @@ const IClockControllers = {
                 reserved2: v[6],
             }));
             admsDBAttendance(serialNumber, attLog)
+
             return attLog;
         };
 
@@ -260,8 +268,9 @@ const IClockControllers = {
      * @param {Response} res - Express response object
      */
     sendData: async (req, res) => {
-        console.log("HEARTBEAT: ", req.query);
         const serialNumber = req.query.SN;
+        if (!await ADMSServices.checkMachineWhitelist(serialNumber)) return res.status(403).send("Not Recognized");
+        console.log("HEARTBEAT: ", req.query);
         admsDBMachineHeartBeat(serialNumber);
         res.status(200);
         res.write(`OK`);
@@ -274,6 +283,8 @@ const IClockControllers = {
      * @param {Response} res - Express response object
      */
     statusData: async (req, res) => {
+        const serialNumber = req.query.SN;
+        if (!await ADMSServices.checkMachineWhitelist(serialNumber)) return res.status(403).send("Not Recognized");
         console.log("Command Response: ", req.query);
         res.status(200);
         res.write(`OK`);
