@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import ADMSModels from "./adms.js";
+import APIModels from "./api.js";
 
 const database = new Sequelize(
     process.env.DB_NAME,
@@ -20,6 +21,7 @@ const database = new Sequelize(
 
 const models = {
     adms: ADMSModels(database),
+    api: APIModels(database),
 }
 
 const db = {
