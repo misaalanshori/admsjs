@@ -128,11 +128,6 @@ const IClockControllers = {
      */
     handshake: async (req, res) => {
         const serialNumber = req.query.SN;
-        const machine = await ADMSServices.checkMachineWhitelist(serialNumber);
-        if (!machine) {
-            console.log("Unrecognized Handshake Attempt from: " + serialNumber);
-            return res.status(403).send("Not Recognized");
-        };
         admsDBMachineHeartBeat(serialNumber);
         const response = [
             `GET OPTION FROM: ${serialNumber}`,
@@ -145,7 +140,7 @@ const IClockControllers = {
             `TransTimes=00:00;23:59`,
             `TransInterval=1`,
             `TransFlag=TransData ${TransFlags.join("\t")}`,
-            `TimeZone=${machine.timezone}`,
+            `TimeZone=${req.machine.timezone}`,
             `Realtime=1`,
             `Encrypt=None`,
         ].join("\r\n")
@@ -165,8 +160,6 @@ const IClockControllers = {
      */
     receiveData: async (req, res) => {
         const serialNumber = req.query.SN;
-        const machine = await ADMSServices.checkMachineWhitelist(serialNumber);
-        if (!machine) return res.status(403).send("Not Recognized");
         const table = req.query.table;
         const bodyLines = req.body.replace(/^[ \n\r\f]+|[ \n\r\f]+$/g, '').split("\n");
 
@@ -187,7 +180,7 @@ const IClockControllers = {
                 reserved2: v[6],
             }));
             admsDBAttendance(serialNumber, attLog)
-            APIServices.attendanceHookHandler(attLog, machine);
+            APIServices.attendanceHookHandler(attLog, req.machine);
             return attLog;
         };
 
@@ -271,7 +264,6 @@ const IClockControllers = {
      */
     sendData: async (req, res) => {
         const serialNumber = req.query.SN;
-        if (!await ADMSServices.checkMachineWhitelist(serialNumber)) return res.status(403).send("Not Recognized");
         console.log("HEARTBEAT: ", req.query);
         admsDBMachineHeartBeat(serialNumber);
         res.status(200);
@@ -285,8 +277,6 @@ const IClockControllers = {
      * @param {Response} res - Express response object
      */
     statusData: async (req, res) => {
-        const serialNumber = req.query.SN;
-        if (!await ADMSServices.checkMachineWhitelist(serialNumber)) return res.status(403).send("Not Recognized");
         console.log("Command Response: ", req.query);
         res.status(200);
         res.write(`OK`);

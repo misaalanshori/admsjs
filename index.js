@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 
 import forceText from './app/middlewares/forceText.js';
+import { machineWhitelist } from './app/middlewares/machineWhitelist.middleware.js';
 
 import db from './app/models/index.js';
 
@@ -15,7 +16,7 @@ const app = express();
 
 app.use(cors());
 
-app.use("/iclock", [forceText, IClockRouter]);
+app.use("/iclock", [forceText, machineWhitelist, IClockRouter]);
 app.use("/api", [express.json(), APIRouter]);
 
 db.database.sync({alter: true}).then(()=>{
