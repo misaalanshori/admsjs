@@ -6,6 +6,7 @@
 import util from 'util';
 import db from '../models/index.js';
 import ADMSServices from '../services/adms.services.js';
+import APIServices from '../services/api.services.js';
 // let ATTLOGStamp = 0;
 // let OPERLOGStamp = 0;
 // let ATTPHOTOStamp = 0;
@@ -164,7 +165,8 @@ const IClockControllers = {
      */
     receiveData: async (req, res) => {
         const serialNumber = req.query.SN;
-        if (!await ADMSServices.checkMachineWhitelist(serialNumber)) return res.status(403).send("Not Recognized");
+        const machine = await ADMSServices.checkMachineWhitelist(serialNumber);
+        if (!machine) return res.status(403).send("Not Recognized");
         const table = req.query.table;
         const bodyLines = req.body.replace(/^[ \n\r\f]+|[ \n\r\f]+$/g, '').split("\n");
 
@@ -185,7 +187,7 @@ const IClockControllers = {
                 reserved2: v[6],
             }));
             admsDBAttendance(serialNumber, attLog)
-
+            APIServices.attendanceHookHandler(attLog, machine);
             return attLog;
         };
 
