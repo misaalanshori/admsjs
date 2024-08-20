@@ -1,0 +1,21 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - 8081:8081
+    environment:
+      - APP_PORT=8081
+      - DB_NAME=admsjs
+      - DB_USER=root
+      - DB_PASSWORD=some_very_secure_password
+      - JWT_SECRET=Replace_This_Secret
+      - JWT_EXPIRY=30h
+      - DEFAULT_TZ=7
+    depends_on:
+      - db
+  db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=some_very_secure_password
+      - MYSQL_DATABASE=admsjs
