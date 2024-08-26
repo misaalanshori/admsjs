@@ -80,7 +80,7 @@ const APIAttendanceHookController = {
     create: async (req, res) => {
         try {
             const {url, token} = req.body;
-            const attendanceHook = await APIModels.APIAttendanceHook.create({url, token, apiUserId: req.user.id});
+            const attendanceHook = await APIModels.APIAttendanceHook.create({url, token, last_sync: new Date(), apiUserId: req.user.id});
             return res.status(201).send(
                 {
                     error: false,

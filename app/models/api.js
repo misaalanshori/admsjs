@@ -42,6 +42,10 @@ const APIModels = (database) => {
         {
             url: Sequelize.STRING,
             token: Sequelize.STRING,
+            last_sync: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
         },
     );
 

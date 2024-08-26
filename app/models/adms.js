@@ -43,7 +43,7 @@ const ADMSModels = (database) => {
     const ADMSAttendance = database.define('admsAttendance',
         {
             pin: Sequelize.INTEGER,
-            date: Sequelize.STRING,
+            date: Sequelize.DATE,
             status: Sequelize.STRING,
             verify: Sequelize.STRING,
             work_code: Sequelize.STRING,

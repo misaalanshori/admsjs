@@ -25,6 +25,7 @@ const models = {
 }
 
 const db = {
+    Sequelize,
     database,
     models,
 }

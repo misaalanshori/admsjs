@@ -5,8 +5,8 @@
 
 import util from 'util';
 import db from '../models/index.js';
-import ADMSServices from '../services/adms.services.js';
 import APIServices from '../services/api.services.js';
+import { getTimezoneOffsetString } from '../utils/utils.js';
 // let ATTLOGStamp = 0;
 // let OPERLOGStamp = 0;
 // let ATTPHOTOStamp = 0;
@@ -106,17 +106,17 @@ const admsDBFingerprint = async (serialNumber, admsFingerprint) => {
     fingerprint.save();
 };
 
-const admsDBAttendance = async (serialNumber, admsAttendance) => {
-    const machine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number: serialNumber} });
+const admsDBAttendance = async (serialNumber, admsAttendance, machine) => {
+    const admsMachine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number: serialNumber} });
     const attendance = ADMSModels.ADMSAttendance.bulkCreate(admsAttendance.map(v => ({
         pin: v.pin,
-        date: v.date,
+        date: new Date(v.date + getTimezoneOffsetString(machine.timezone)),
         status: v.status,
         verify: v.verify,
         work_code: v.workCode,
         reserved_1: v.reserved1,
         reserved_2: v.reserved2,
-        admsMachineId: machine?.id || null,
+        admsMachineId: admsMachine?.id || null,
     })))
 }
 
@@ -179,8 +179,11 @@ const IClockControllers = {
                 reserved1: v[5],
                 reserved2: v[6],
             }));
-            admsDBAttendance(serialNumber, attLog)
-            APIServices.attendanceHookHandler(attLog, req.machine);
+            admsDBAttendance(serialNumber, attLog, req.machine)
+            if (+process.env.REALTIME_SYNC_MODE) {
+                APIServices.attendanceHookHandler(attLog, req.machine);
+            }
+            
             return attLog;
         };
 
