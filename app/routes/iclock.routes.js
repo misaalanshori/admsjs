@@ -1,5 +1,5 @@
 import { Router } from "express";
-import IClockControllers from "../controllers/iclock.js";
+import IClockControllers from "../controllers/iclock.controllers.js";
 
 const IClockRouter = Router();
 

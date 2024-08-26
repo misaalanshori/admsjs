@@ -11,7 +11,7 @@ async function attendanceHookHandler(attendanceData, machine) {
         date: new Date(v.date + getTimezoneOffsetString(machine.timezone))
     }))
     const attendanceHooks = await APIModels.APIAttendanceHook.findAll();
-    console.log(`Handling ${attendanceHooks.length} hooks`)
+    console.log(`${new Date().toISOString()} [INFO] Handling ${attendanceHooks.length} hooks`)
     attendanceHooks.forEach(async (hook) => {
         try {
             const hookRequest = await fetch(hook.url,
@@ -25,23 +25,18 @@ async function attendanceHookHandler(attendanceData, machine) {
                 }
             );
             if (200 <= hookRequest.status < 300) {
-                console.log(`Hook Call to ${hook.url} succeded! (${hookRequest.status}, Count: ${hookData.length})`)
+                console.log(`${new Date().toISOString()} [INFO] Hook Call to ${hook.url} succeded! (${hookRequest.status}, Count: ${hookData.length})`)
                 hook.last_sync = handleTime;
                 hook.save();
             } else {
-                console.log(`Hook Call to ${hook.url} failed! (${hookRequest.status})`)
+                console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${hookRequest.status})`)
             }
         } catch (err) {
-            console.log(`Hook Call to ${hook.url} failed! (${err.toString()})`)
+            console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${err.toString()})`)
         }
-
-        
-        
     });
 }
 
-const APIServices = {
+export {
     attendanceHookHandler,
 };
-
-export default APIServices;

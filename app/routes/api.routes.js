@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { authenticatedRoute } from "../middlewares/authenticatedRoute.js";
-import APIAuthControllers from "../controllers/apiAuthentication.js";
-import APIMachinesController from "../controllers/apiMachines.js";
-import APIAttendanceHookController from "../controllers/apiAttendanceHook.js";
+import { authenticatedRoute } from "../middlewares/authenticatedRoute.middlewares.js";
+import APIAuthControllers from "../controllers/apiAuthentication.controllers.js";
+import APIMachinesController from "../controllers/apiMachines.controllers.js";
+import APIAttendanceHookController from "../controllers/apiAttendanceHook.controllers.js";
 
 const APIRouter = Router();
 

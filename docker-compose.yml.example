@@ -6,12 +6,16 @@ services:
       - 8081:8081
     environment:
       - APP_PORT=8081
+      - DEBUG_MODE=0
+      - DB_HOST=db
       - DB_NAME=admsjs
       - DB_USER=root
       - DB_PASSWORD=some_very_secure_password
       - JWT_SECRET=Replace_This_Secret
       - JWT_EXPIRY=30h
       - DEFAULT_TZ=7
+      - REALTIME_SYNC_MODE=1
+      - BATCHED_SYNC_SCHEDULE=* * * * *
     depends_on:
       - db
   db:

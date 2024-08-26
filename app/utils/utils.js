@@ -19,4 +19,4 @@ function getTimezoneOffsetString(offset) {
     return `${sign}${formattedHours}${formattedMinutes}`;
 }
 
-export {getTimezoneOffsetString}
+export { getTimezoneOffsetString }

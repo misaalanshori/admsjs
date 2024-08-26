@@ -4,12 +4,13 @@
  */
 
 import util from 'util';
-import db from '../models/index.js';
-import APIServices from '../services/api.services.js';
-import { getTimezoneOffsetString } from '../utils/utils.js';
-// let ATTLOGStamp = 0;
-// let OPERLOGStamp = 0;
-// let ATTPHOTOStamp = 0;
+import { attendanceHookHandler } from '../services/api.services.js';
+import {
+    handleMachineHeartbeat,
+    handleUserReceived,
+    handleFingerprintReceived,
+    handleAttendanceReceived
+} from '../services/adms.services.js';
 
 const TransFlags = [
     "AttLog", // Attendance log
@@ -51,74 +52,7 @@ const OpTypes = [
     "Delete entry and exit records",
     "Clear administrator privilege"
 ]
-const ADMSModels = db.models.adms
 
-const admsDBMachineHeartBeat = async (serialNumber) => {
-    const machine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number: serialNumber} });
-    if (machine) {
-        machine.last_seen = new Date();
-        machine.save()
-    } else {
-        ADMSModels.ADMSMachine.create({
-            serial_number: serialNumber,
-            last_seen: new Date(),
-        })
-    }
-};
-
-const admsDBUser = async (serialNumber, admsUser) => {
-    let user;
-    user = await ADMSModels.ADMSUser.findOne({ where: {pin: admsUser.PIN} })
-    if (!user) {
-        user = ADMSModels.ADMSUser.build();
-        user.pin = +admsUser.PIN;
-        const machine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number: serialNumber} });
-        if (machine) {
-            user.admsMachineId = machine.id
-        }
-    }
-    user.name = admsUser.Name;
-    user.primary = admsUser.Pri;
-    user.password = admsUser.Passwd;
-    user.card = admsUser.Card;
-    user.group = admsUser.Grp;
-    user.timezone = admsUser.TZ;
-    user.verify = admsUser.Verify;
-    user.vice_card = admsUser.ViceCard;
-    user.save();
-};
-
-const admsDBFingerprint = async (serialNumber, admsFingerprint) => {
-    let fingerprint;
-    fingerprint = await ADMSModels.ADMSFingerprint.findOne({ where: {pin: admsFingerprint.PIN, fid: admsFingerprint.FID} });
-    if (!fingerprint) {
-        fingerprint = ADMSModels.ADMSFingerprint.build();
-        fingerprint.pin = +admsFingerprint.PIN;
-        fingerprint.fid = +admsFingerprint.FID;
-        const machine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number: serialNumber} });
-        if (machine) {
-            fingerprint.admsMachineId = machine.id
-        }
-    }
-    fingerprint.size = +admsFingerprint.Size;
-    fingerprint.valid = admsFingerprint.Valid;
-    fingerprint.template = admsFingerprint.TMP;
-    fingerprint.save();
-};
-
-const admsDBAttendance = async (serialNumber, admsAttendance, machine) => {
-    const admsMachine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number: serialNumber} });
-    const attendance = ADMSModels.ADMSAttendance.bulkCreate(admsAttendance.map(v => ({
-        pin: v.pin,
-        date: new Date(v.date + getTimezoneOffsetString(machine.timezone)),
-        status: v.status,
-        verify: v.verify,
-        work_code: v.workCode,
-        reserved_1: v.reserved1,
-        reserved_2: v.reserved2,
-        admsMachineId: admsMachine?.id || null,
-    })))
-}
 
 const IClockControllers = {
     /**
@@ -128,7 +62,7 @@ const IClockControllers = {
      */
     handshake: async (req, res) => {
         const serialNumber = req.query.SN;
-        admsDBMachineHeartBeat(serialNumber);
+        handleMachineHeartbeat(serialNumber);
         const response = [
             `GET OPTION FROM: ${serialNumber}`,
             `STAMP=9999`,
@@ -145,6 +79,7 @@ const IClockControllers = {
             `Encrypt=None`,
         ].join("\r\n")
 
+        console.log(`${new Date().toISOString()} [INFO] Received Handshake:`)
         console.log(req.query);
         console.log(response);
 
@@ -179,11 +114,11 @@ const IClockControllers = {
                 reserved1: v[5],
                 reserved2: v[6],
             }));
-            admsDBAttendance(serialNumber, attLog, req.machine)
+            handleAttendanceReceived(serialNumber, attLog, req.machine)
             if (+process.env.REALTIME_SYNC_MODE) {
-                APIServices.attendanceHookHandler(attLog, req.machine);
+                attendanceHookHandler(attLog, req.machine);
             }
-            
+
             return attLog;
         };
 
@@ -209,7 +144,7 @@ const IClockControllers = {
                         [pair[0]]: pair[1]
                     }
                 });
-                admsDBUser(serialNumber, data)
+                handleUserReceived(serialNumber, data)
                 return data;
             };
 
@@ -223,7 +158,7 @@ const IClockControllers = {
                         [key]: value
                     };
                 });
-                admsDBFingerprint(serialNumber, data);
+                handleFingerprintReceived(serialNumber, data);
                 return data;
             };
 
@@ -253,7 +188,7 @@ const IClockControllers = {
         };
 
         data.data = (handlers[table] || table.default)();
-        console.log("LOG: ", util.inspect(data, true, 10));
+        console.log(`${new Date().toISOString()} [INFO] Machine Event: `, util.inspect(data, true, 10));
 
         res.status(200);
         res.write(`OK: ${bodyLines.length}`);
@@ -267,8 +202,8 @@ const IClockControllers = {
      */
     sendData: async (req, res) => {
         const serialNumber = req.query.SN;
-        console.log("HEARTBEAT: ", req.query);
-        admsDBMachineHeartBeat(serialNumber);
+        console.log(`${new Date().toISOString()} [INFO] HEARTBEAT: `, req.query);
+        handleMachineHeartbeat(serialNumber);
         res.status(200);
         res.write(`OK`);
         res.end();
@@ -280,7 +215,7 @@ const IClockControllers = {
      * @param {Response} res - Express response object
      */
     statusData: async (req, res) => {
-        console.log("Command Response: ", req.query);
+        console.log(`${new Date().toISOString()} [INFO] Command Response: `, req.query);
         res.status(200);
         res.write(`OK`);
         res.end();

@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
-import ADMSModels from "./adms.js";
-import APIModels from "./api.js";
+import ADMSModels from "./adms.models.js";
+import APIModels from "./api.models.js";
 
 const database = new Sequelize(
     process.env.DB_NAME,
@@ -16,6 +16,7 @@ const database = new Sequelize(
             acquire: 30000,
             idle: 10000
         },
+        logging: +process.env.DEBUG_MODE ? console.log : false
     }
 );
 

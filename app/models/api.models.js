@@ -40,7 +40,10 @@ const APIModels = (database) => {
 
     const APIAttendanceHook = database.define('apiAttendanceHook',
         {
-            url: Sequelize.STRING,
+            url: { 
+                type: Sequelize.STRING,
+                allowNull: false
+            },
             token: Sequelize.STRING,
             last_sync: {
                 type: Sequelize.DATE,

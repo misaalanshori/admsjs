@@ -6,7 +6,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import db from '../models/index.js';
-import { authenticateToken } from "../middlewares/authenticatedRoute.js";
+import { authenticateToken } from "../middlewares/authenticatedRoute.middlewares.js";
 
 const APIModels = db.models.api;
 

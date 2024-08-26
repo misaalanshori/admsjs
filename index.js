@@ -2,14 +2,15 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-import forceText from './app/middlewares/forceText.js';
-import { machineWhitelist } from './app/middlewares/machineWhitelist.middleware.js';
+import forceText from './app/middlewares/forceText.middlewares.js';
+import { machineWhitelist } from './app/middlewares/machineWhitelist.middlewares.js';
 
 import db from './app/models/index.js';
 
-import IClockRouter from './app/routes/iclock.js';
-import APIRouter from './app/routes/api.js';
 import initScheduledJobs from './app/jobs/index.js';
+
+import IClockRouter from './app/routes/iclock.routes.js';
+import APIRouter from './app/routes/api.routes.js';
 
 const port = process.env.APP_PORT
 

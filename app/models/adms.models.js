@@ -34,7 +34,7 @@ const ADMSModels = (database) => {
         {
             pin: Sequelize.INTEGER,
             fid: Sequelize.TINYINT,
-            size: Sequelize.SMALLINT,
+            size: Sequelize.INTEGER,
             valid: Sequelize.STRING,
             template: Sequelize.TEXT('long'),
         },
