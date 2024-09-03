@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.0",
     "node-schedule": "^2.1.1",
+    "papaparse": "^5.4.1",
     "sequelize": "^6.37.3"
   }
 }
