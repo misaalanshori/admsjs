@@ -52,6 +52,25 @@ const ADMSModels = (database) => {
         }
     );
     
+    const ADMSCommandBuffer = database.define('admsCommandBuffer',
+        {
+            serial_number: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            command: {
+                type: Sequelize.JSON,
+                allowNull: false,
+            },
+            status: {
+                type: Sequelize.ENUM("SUBMITTED", "EXECUTING", "SUCCESS", "FAILURE"),
+                allowNull: false,
+            },
+            execution_time: Sequelize.DATE,
+            result_time: Sequelize.DATE,
+            results: Sequelize.JSON,     
+        }
+    );
     
     ADMSUser.SourceMachine = ADMSUser.belongsTo(ADMSMachine);
     ADMSFingerprint.SourceMachine = ADMSFingerprint.belongsTo(ADMSMachine);
@@ -61,6 +80,7 @@ const ADMSModels = (database) => {
         ADMSUser,
         ADMSFingerprint,
         ADMSAttendance,
+        ADMSCommandBuffer
     };
 }
 

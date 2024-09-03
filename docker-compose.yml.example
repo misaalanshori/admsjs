@@ -16,6 +16,7 @@ services:
       - DEFAULT_TZ=7
       - REALTIME_SYNC_MODE=1
       - BATCHED_SYNC_SCHEDULE=* * * * *
+      - MAX_COMMAND_PER_REQUEST=100
     depends_on:
       - db
   db:

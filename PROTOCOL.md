@@ -231,7 +231,6 @@ Terminal will send a heartbeat to this endpoint with a serial number, occasional
 TBD, refer to [docs.nufaza.com: Mengirim Rekap Informasi Terkini](https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/#mengirim-rekap-informasi-terkini) and [docs.nufaza.com: Mengambil Perintah dari Pusat](https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/#mengambil-perintah-dari-pusat)
 
 ## **StatusData (POST /devicecmd)**
-The terminal will respond to commands by sending a request with the result to this endpoint.
-
+Command responses seem to get sent to /iclock/cdata just with no table. Which seems to be different to the documentations below.
 TBD, refer to [docs.nufaza.com: Membalas Perintah dari Pusat](https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/#membalas-perintah-dari-pusat)
 

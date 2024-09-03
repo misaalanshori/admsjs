@@ -11,6 +11,8 @@ import initScheduledJobs from './app/jobs/index.js';
 
 import IClockRouter from './app/routes/iclock.routes.js';
 import APIRouter from './app/routes/api.routes.js';
+import ADMSRouter from './app/routes/adms.routes.js';
+import { authenticatedRoute } from './app/middlewares/authenticatedRoute.middlewares.js';
 
 const port = process.env.APP_PORT
 
@@ -20,6 +22,7 @@ app.use(cors());
 
 app.use("/iclock", [forceText, machineWhitelist, IClockRouter]);
 app.use("/api", [express.json(), APIRouter]);
+app.use("/adms", [express.json(), authenticatedRoute, ADMSRouter]);
 
 db.database.sync({alter: true}).then(()=>{
     console.log(initScheduledJobs());

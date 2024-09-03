@@ -19,4 +19,17 @@ function getTimezoneOffsetString(offset) {
     return `${sign}${formattedHours}${formattedMinutes}`;
 }
 
-export { getTimezoneOffsetString }
+function buildADMSCommand(id, command) {
+    let commandString = `C:${id}:`
+    commandString += command.header.join(" ");
+    if (command.body) {
+        commandString += " " + Object.entries(command.body).map(v => `${v[0]}=${v[1]}`).join("\t")
+    }
+    return commandString;
+}
+
+// function generateUserCommand(user) {
+//     if (!user.pin)
+// }
+
+export { getTimezoneOffsetString, buildADMSCommand }

@@ -1,6 +1,7 @@
 import db from '../models/index.js';
 import { getTimezoneOffsetString } from '../utils/utils.js';
 
+const { Op } = db.Sequelize;
 const APIModels = db.models.api
 const ADMSModels = db.models.adms
 
@@ -81,10 +82,52 @@ async function handleAttendanceReceived(serialNumber, admsAttendance, machine) {
     })))
 }
 
+async function handleCommandResponseReceived(amdsCommandResponse) {
+    const recvTime = new Date();
+    const cmdRequests = await ADMSModels.ADMSCommandBuffer.findAll({where: {id: {[Op.in]: Object.keys(amdsCommandResponse)}}})
+    cmdRequests.forEach(v=>{
+        v.status = +(amdsCommandResponse[v.id].Return) >= 0 ? "SUCCESS" : "FAILURE";
+        v.results = amdsCommandResponse[v.id];
+        v.result_time = recvTime;
+        v.save()
+    })
+}
+
+async function sendCommmand(serialNumbers, commands, exclusionMode = false, userId) {
+    const targets = [];
+
+    if (commands.some(v=> !(v.header))) throw "Request contains invalid command";
+
+    if (!serialNumbers) {
+        const broadcastMachines = await ADMSModels.ADMSMachine.findAll();
+        targets.push(...broadcastMachines.map(v=>v.serial_number));
+    } else if (!exclusionMode) {
+        targets.push(...serialNumbers);
+    } else {
+        const broadcastMachines = await ADMSModels.ADMSMachine.findAll({where: {serial_number: {[Op.notIn]: serialNumbers}}});
+        targets.push(...broadcastMachines.map(v=>v.serial_number));
+    }
+
+    const commandObjects = targets.flatMap(target => {
+        return commands.map(cmd => ({
+            serial_number: target,
+            command: cmd,
+            status: "SUBMITTED",
+            apiUserId: userId
+        }));
+    });
+    // console.log(targets)
+    // console.log(commandObjects)
+
+    return await ADMSModels.ADMSCommandBuffer.bulkCreate(commandObjects);
+}
+
 export {
     checkMachineWhitelist,
     handleMachineHeartbeat,
     handleUserReceived,
     handleFingerprintReceived,
-    handleAttendanceReceived
+    handleAttendanceReceived,
+    handleCommandResponseReceived,
+    sendCommmand,
 }

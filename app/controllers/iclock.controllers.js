@@ -4,13 +4,18 @@
  */
 
 import util from 'util';
+import db from '../models/index.js';
 import { attendanceHookHandler } from '../services/api.services.js';
 import {
     handleMachineHeartbeat,
     handleUserReceived,
     handleFingerprintReceived,
-    handleAttendanceReceived
+    handleAttendanceReceived,
+    handleCommandResponseReceived,
 } from '../services/adms.services.js';
+import { buildADMSCommand } from '../utils/utils.js';
+
+const ADMSModels = db.models.adms;
 
 const TransFlags = [
     "AttLog", // Attendance log
@@ -174,11 +179,27 @@ const IClockControllers = {
                 const lineData = rest.join(' ').split("\t");
                 return {
                     operation,
-                    data: (handlers[operation] || table.default)(lineData)
+                    data: (handlers[operation] || handlers.default)(lineData)
                 };
             });
 
             return operationData;
+        }
+
+        const cmdResponseHandler = () => {
+            const recvTime = new Date();
+            const cmdResponses = {}
+            bodyLines.forEach(v=>{
+                const response = {}
+                v.split("&").forEach(v=>{
+                    const [key, value] = v.split("=");
+                    response[key] = value;
+                })
+                cmdResponses[response.ID] = response
+            })
+            console.log(cmdResponses)
+            handleCommandResponseReceived(cmdResponses)
+            return Object.values(cmdResponses)
         }
 
         const handlers = {
@@ -187,7 +208,13 @@ const IClockControllers = {
             default: () => req.body,
         };
 
-        data.data = (handlers[table] || table.default)();
+        if (!table) {
+            data.data = cmdResponseHandler();
+        } else {
+            data.data = (handlers[table] || handlers.default)();
+        }
+
+        
         console.log(`${new Date().toISOString()} [INFO] Machine Event: `, util.inspect(data, true, 10));
 
         res.status(200);
@@ -204,18 +231,48 @@ const IClockControllers = {
         const serialNumber = req.query.SN;
         console.log(`${new Date().toISOString()} [INFO] HEARTBEAT: `, req.query);
         handleMachineHeartbeat(serialNumber);
+        const commands = await ADMSModels.ADMSCommandBuffer.findAll({
+            where: {
+            serial_number: serialNumber,
+            status: 'SUBMITTED'
+            },
+            order: [['createdAt', 'ASC']],
+            limit: +process.env.MAX_COMMAND_PER_REQUEST
+        });
+        // commands.forEach(v => {
+        //     console.log(buildADMSCommand(v.id, v.command))
+        // })
         res.status(200);
-        res.write(`OK`);
+        if (commands.length > 0) {
+            commands.forEach((v) => {
+                try {
+                    res.write(buildADMSCommand(v.id, v.command));
+                    res.write("\n");
+                    v.status = "EXECUTING";
+                    v.execution_time = new Date();
+                    v.save();
+                } catch (err) {
+                    console.log(`${new Date().toISOString()} [ERROR] Error while sending command: ${err}`);
+                    v.results = {err: err.toString()}
+                    v.status = "FAILURE";
+                    v.execution_time = new Date();
+                    v.save();
+                }
+                
+            })
+        } else {
+            res.write(`OK`);
+        }
         res.end();
     },
 
     /**
-     * Status Data controller (Command Response) [POST /devicecmd]
+     * Status Data controller [POST /devicecmd]
      * @param {Request} req - Express request object
      * @param {Response} res - Express response object
      */
     statusData: async (req, res) => {
-        console.log(`${new Date().toISOString()} [INFO] Command Response: `, req.query);
+        console.log(`${new Date().toISOString()} [INFO] /devicecmd: `, req.query);
         res.status(200);
         res.write(`OK`);
         res.end();
