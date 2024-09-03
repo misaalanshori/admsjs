@@ -122,6 +122,18 @@ async function sendCommmand(serialNumbers, commands, exclusionMode = false, user
     return await ADMSModels.ADMSCommandBuffer.bulkCreate(commandObjects);
 }
 
+async function handleFingerprintSync(serialNumber, data) {
+    const command = {
+        header: [
+            "DATA",
+            "UPDATE",
+            "FINGERTMP"
+        ],
+        body: data
+    };
+    await sendCommmand([serialNumber], [command], true, null)
+}
+
 export {
     checkMachineWhitelist,
     handleMachineHeartbeat,
@@ -130,4 +142,5 @@ export {
     handleAttendanceReceived,
     handleCommandResponseReceived,
     sendCommmand,
+    handleFingerprintSync,
 }

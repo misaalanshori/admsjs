@@ -12,6 +12,7 @@ import {
     handleFingerprintReceived,
     handleAttendanceReceived,
     handleCommandResponseReceived,
+    handleFingerprintSync,
 } from '../services/adms.services.js';
 import { buildADMSCommand } from '../utils/utils.js';
 
@@ -164,6 +165,7 @@ const IClockControllers = {
                     };
                 });
                 handleFingerprintReceived(serialNumber, data);
+                handleFingerprintSync(serialNumber, data);
                 return data;
             };
 
