@@ -6,13 +6,16 @@ const APIModels = db.models.api
 const ADMSModels = db.models.adms
 
 async function checkMachineWhitelist(serial_number) {
-    const machineCount = await APIModels.APIMachine.count();
-    if (machineCount == 0) return {
-        serial_number,
-        timezone: +process.env.DEFAULT_TZ
-    };
-    const machine = await APIModels.APIMachine.findOne({ where: {serial_number} })
-    return machine;
+    if (+process.env.WHITELIST) {
+        return await APIModels.APIMachine.findOne({ where: {serial_number} })
+    } else {
+        return {
+            serial_number,
+            timezone: +process.env.DEFAULT_TZ
+        }
+    }
+    ;
+
 }
 
 async function handleMachineHeartbeat(serial_number) {
@@ -98,13 +101,15 @@ async function sendCommmand(serialNumbers, commands, exclusionMode = false, user
 
     if (commands.some(v=> !(v.header))) throw "Request contains invalid command";
 
+    const MachineModelSource = +process.env.WHITELIST ? APIModels.APIMachine : ADMSModels.ADMSMachine;
+
     if (!serialNumbers) {
-        const broadcastMachines = await ADMSModels.ADMSMachine.findAll();
+        const broadcastMachines = await MachineModelSource.findAll();
         targets.push(...broadcastMachines.map(v=>v.serial_number));
     } else if (!exclusionMode) {
         targets.push(...serialNumbers);
     } else {
-        const broadcastMachines = await ADMSModels.ADMSMachine.findAll({where: {serial_number: {[Op.notIn]: serialNumbers}}});
+        const broadcastMachines = await MachineModelSource.findAll({where: {serial_number: {[Op.notIn]: serialNumbers}}});
         targets.push(...broadcastMachines.map(v=>v.serial_number));
     }
 
