@@ -5,17 +5,15 @@
 
 import util from 'util';
 import db from '../models/index.js';
-import { attendanceHookHandler } from '../services/api.services.js';
 import {
     handleMachineHeartbeat,
-    handleUserReceived,
-    handleFingerprintReceived,
     handleAttendanceReceived,
     handleCommandResponseReceived,
     handleFingerprintSync,
     handleUserSync,
 } from '../services/adms.services.js';
-import { buildADMSCommand } from '../utils/utils.js';
+import { buildADMSCommand, getTimezoneOffsetString } from '../utils/utils.js';
+
 
 const ADMSModels = db.models.adms;
 
@@ -112,19 +110,13 @@ const IClockControllers = {
 
         const attLogHandler = () => {
             const bodyData = bodyLines.map(v => v.split("\t"));
-            const attLog = bodyData.map(v => ({
+            const attLog = bodyData.map((v,i) => ({
                 pin: v[0],
-                date: v[1],
+                date: new Date(v[1] + getTimezoneOffsetString(req.machine.timezone)),
                 status: v[2],
-                verify: v[3],
-                workCode: v[4],
-                reserved1: v[5],
-                reserved2: v[6],
+                raw: bodyLines[i]
             }));
-            handleAttendanceReceived(serialNumber, attLog, req.machine)
-            if (+process.env.REALTIME_SYNC_MODE) {
-                attendanceHookHandler(attLog, req.machine);
-            }
+            handleAttendanceReceived(serialNumber, attLog);
 
             return attLog;
         };
@@ -151,7 +143,6 @@ const IClockControllers = {
                         [pair[0]]: pair[1]
                     }
                 });
-                handleUserReceived(serialNumber, data)
                 handleUserSync(serialNumber, data);
                 return data;
             };
@@ -166,7 +157,6 @@ const IClockControllers = {
                         [key]: value
                     };
                 });
-                handleFingerprintReceived(serialNumber, data);
                 handleFingerprintSync(serialNumber, data);
                 return data;
             };
@@ -191,7 +181,6 @@ const IClockControllers = {
         }
 
         const cmdResponseHandler = () => {
-            const recvTime = new Date();
             const cmdResponses = {}
             bodyLines.forEach(v=>{
                 const response = {}

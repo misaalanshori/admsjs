@@ -5,7 +5,7 @@ const APIModels = db.models.api;
 const ADMSModels = db.models.adms;
 
 export default async function batchedAttendanceHookHandler() {
-    console.log(`${new Date().toISOString()} [INFO] Executing Scheduled Sync (${new Date()})`)
+    console.log(`${new Date().toISOString()} [INFO] Executing Attendance Synchronization (${new Date()})`)
     const attendanceHooks = await APIModels.APIAttendanceHook.findAll();
     attendanceHooks.forEach(async (hook) => {
         const attendanceData = await ADMSModels.ADMSAttendance.findAll({
@@ -40,14 +40,14 @@ export default async function batchedAttendanceHookHandler() {
                 }
             );
             if (200 <= hookRequest.status < 300) {
-                console.log(`${new Date().toISOString()} [INFO] Batched Hook Call to ${hook.url} succeded! (${hookRequest.status}, Count: ${hookData.length})`)
+                console.log(`${new Date().toISOString()} [INFO] Hook Call to ${hook.url} succeded! (${hookRequest.status}, Count: ${hookData.length})`)
                 hook.last_sync = attendanceData.at(-1).createdAt;
                 hook.save();
             } else {
-                console.log(`${new Date().toISOString()} [ERROR] Batched Hook Call to ${hook.url} failed! (${hookRequest.status})`)
+                console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${hookRequest.status})`)
             }
         } catch (err) {
-            console.log(`${new Date().toISOString()} [ERROR] Batched Hook Call to ${hook.url} failed! (${err.toString()})`)
+            console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${err.toString()})`)
         }
         
     })

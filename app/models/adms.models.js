@@ -11,44 +11,30 @@ import Sequelize from "sequelize";
 const ADMSModels = (database) => {
     const ADMSMachine = database.define('admsMachine',
         {
-            serial_number: Sequelize.STRING,
+            serial_number: { 
+                type: Sequelize.STRING,
+                allowNull: false
+            },
             last_seen: Sequelize.DATE
         },
     );
-    
-    const ADMSUser = database.define('admsUser',
-        {
-            pin: Sequelize.INTEGER,
-            name: Sequelize.STRING,
-            primary: Sequelize.STRING,
-            password: Sequelize.STRING,
-            card: Sequelize.STRING,
-            group: Sequelize.STRING,
-            timezone: Sequelize.STRING,
-            verify: Sequelize.STRING,
-            vice_card: Sequelize.STRING,
-        },
-    );
-    
-    const ADMSFingerprint = database.define('admsFingerprint',
-        {
-            pin: Sequelize.INTEGER,
-            fid: Sequelize.TINYINT,
-            size: Sequelize.INTEGER,
-            valid: Sequelize.STRING,
-            template: Sequelize.TEXT('long'),
-        },
-    );
-    
+
     const ADMSAttendance = database.define('admsAttendance',
         {
-            pin: Sequelize.INTEGER,
-            date: Sequelize.DATE,
+            pin: { 
+                type: Sequelize.STRING,
+                allowNull: false
+            },
+            date: { 
+                type: Sequelize.DATE,
+                allowNull: false
+            },
             status: Sequelize.STRING,
-            verify: Sequelize.STRING,
-            work_code: Sequelize.STRING,
-            reserved_1: Sequelize.STRING,
-            reserved_2: Sequelize.STRING,
+            raw: Sequelize.TEXT('long'),
+            serial_number: { 
+                type: Sequelize.STRING,
+                allowNull: false
+            },
         }
     );
     
@@ -71,14 +57,8 @@ const ADMSModels = (database) => {
             results: Sequelize.JSON,     
         }
     );
-    
-    ADMSUser.SourceMachine = ADMSUser.belongsTo(ADMSMachine);
-    ADMSFingerprint.SourceMachine = ADMSFingerprint.belongsTo(ADMSMachine);
-    ADMSAttendance.SourceMachine = ADMSAttendance.belongsTo(ADMSMachine);
     return {
         ADMSMachine,
-        ADMSUser,
-        ADMSFingerprint,
         ADMSAttendance,
         ADMSCommandBuffer
     };
