@@ -79,12 +79,22 @@ const APIMachinesController = {
      */
     create: async (req, res) => {
         try {
-            const {serial_number, timezone} = req.body;
-            const machine = await APIModels.APIMachine.create({serial_number, timezone, apiUserId: req.user.id});
+            const machines = []
+            if (Array.isArray(req.body)) {
+                req.body.forEach(machine => {
+                    const {serial_number, timezone} = machine;
+                    machines.push({serial_number, timezone, apiUserId: req.user.id})
+                });
+            } else {
+                const {serial_number, timezone} = req.body;
+                machines.push({serial_number, timezone, apiUserId: req.user.id})
+            }
+            
+            const machine = await APIModels.APIMachine.bulkCreate(machines);
             return res.status(201).send(
                 {
                     error: false,
-                    message: "Machine created successfully",
+                    message: "Machines created successfully",
                     data: machine,
                 }
             )
