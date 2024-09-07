@@ -181,39 +181,17 @@ const IClockControllers = {
             return operationData;
         }
 
-        const cmdResponseHandler = () => {
-            const cmdResponses = {}
-            bodyLines.forEach(v=>{
-                const response = {}
-                v.split("&").forEach(v=>{
-                    const [key, value] = v.split("=");
-                    response[key] = value;
-                })
-                cmdResponses[response.ID] = response
-            })
-            console.log(cmdResponses)
-            handleCommandResponseReceived(cmdResponses)
-            return Object.values(cmdResponses)
-        }
-
         const handlers = {
             "ATTLOG": attLogHandler,
             "OPERLOG": operLogHandler,
             default: () => req.body,
         };
 
-        if (!table) {
-            data.data = cmdResponseHandler();
-        } else {
-            data.data = (handlers[table] || handlers.default)();
-        }
-
+        data.data = (handlers[table] || handlers.default)();
         
         console.log(`${new Date().toISOString()} [INFO] Machine Event: `, util.inspect(data, true, 10));
 
-        if (table == "OPERLOG") {
-            handleMachineLogging(serialNumber, table, data.data);
-        }
+        handleMachineLogging(serialNumber, table, data.data);
 
         res.status(200);
         res.write(`OK: ${bodyLines.length}`);
@@ -265,14 +243,24 @@ const IClockControllers = {
     },
 
     /**
-     * Status Data controller [POST /devicecmd]
+     * Status Data controller (Command Response) [POST /devicecmd]
      * @param {Request} req - Express request object
      * @param {Response} res - Express response object
      */
     statusData: async (req, res) => {
-        console.log(`${new Date().toISOString()} [INFO] /devicecmd: `, req.query);
+        const bodyLines = req.body.replace(/^[ \n\r\f]+|[ \n\r\f]+$/g, '').split("\n");
+        const cmdResponses = {}
+        bodyLines.forEach(v=>{
+            const response = {}
+            v.split("&").forEach(v=>{
+                const [key, value] = v.split("=");
+                response[key] = value;
+            })
+            cmdResponses[response.ID] = response
+        })
+        handleCommandResponseReceived(cmdResponses)
         res.status(200);
-        res.write(`OK`);
+        res.write(`OK: ${bodyLines.length}`);
         res.end();
     }
 }

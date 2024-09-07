@@ -6,6 +6,6 @@ const IClockRouter = Router();
 IClockRouter.get("/cdata", IClockControllers.handshake);
 IClockRouter.post("/cdata", IClockControllers.receiveData);
 IClockRouter.get("/getrequest", IClockControllers.sendData);
-IClockRouter.post("/devicecmd", IClockControllers.receiveData);
+IClockRouter.post("/devicecmd", IClockControllers.statusData);
 
 export default IClockRouter;
