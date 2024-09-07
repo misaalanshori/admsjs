@@ -134,6 +134,18 @@ async function handleFingerprintSync(serialNumber, data) {
     await sendCommmand([serialNumber], [command], true, null)
 }
 
+async function handleUserSync(serialNumber, data) {
+    const command = {
+        header: [
+            "DATA",
+            "UPDATE",
+            "USERINFO"
+        ],
+        body: data
+    };
+    await sendCommmand([serialNumber], [command], true, null)
+}
+
 export {
     checkMachineWhitelist,
     handleMachineHeartbeat,
@@ -143,4 +155,5 @@ export {
     handleCommandResponseReceived,
     sendCommmand,
     handleFingerprintSync,
+    handleUserSync,
 }
