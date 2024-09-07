@@ -44,6 +44,15 @@ async function handleAttendanceReceived(serialNumber, admsAttendance) {
     }
 }
 
+async function handleMachineLogging(serial_number, table, data) {
+    await ADMSModels.ADMSLogs.bulkCreate(data.map(v => ({
+        serial_number,
+        table,
+        operation: v.operation,
+        data: v,
+    })));
+}
+
 async function handleCommandResponseReceived(amdsCommandResponse) {
     const recvTime = new Date();
     const cmdRequests = await ADMSModels.ADMSCommandBuffer.findAll({where: {id: {[Op.in]: Object.keys(amdsCommandResponse)}}})
@@ -114,6 +123,7 @@ export {
     checkMachineWhitelist,
     handleMachineHeartbeat,
     handleAttendanceReceived,
+    handleMachineLogging,
     handleCommandResponseReceived,
     sendCommmand,
     handleFingerprintSync,

@@ -37,6 +37,18 @@ const ADMSModels = (database) => {
             },
         }
     );
+
+    const ADMSLogs = database.define('admsLogs',
+        {
+            serial_number: { 
+                type: Sequelize.STRING,
+                allowNull: false
+            },
+            table: Sequelize.STRING,
+            operation: Sequelize.STRING,
+            data: Sequelize.JSON,
+        }
+    )
     
     const ADMSCommandBuffer = database.define('admsCommandBuffer',
         {
@@ -60,7 +72,8 @@ const ADMSModels = (database) => {
     return {
         ADMSMachine,
         ADMSAttendance,
-        ADMSCommandBuffer
+        ADMSLogs,
+        ADMSCommandBuffer,
     };
 }
 

@@ -11,6 +11,7 @@ import {
     handleCommandResponseReceived,
     handleFingerprintSync,
     handleUserSync,
+    handleMachineLogging,
 } from '../services/adms.services.js';
 import { buildADMSCommand, getTimezoneOffsetString } from '../utils/utils.js';
 
@@ -209,6 +210,10 @@ const IClockControllers = {
 
         
         console.log(`${new Date().toISOString()} [INFO] Machine Event: `, util.inspect(data, true, 10));
+
+        if (table == "OPERLOG") {
+            handleMachineLogging(serialNumber, table, data.data);
+        }
 
         res.status(200);
         res.write(`OK: ${bodyLines.length}`);
