@@ -1,3 +1,5 @@
+import ms from "ms";
+
 function getTimezoneOffsetString(offset) {
     // Ensure the offset is a number and within the range of -12 to 14
     if (typeof offset !== 'number' || offset < -12 || offset > 14) {
@@ -28,8 +30,15 @@ function buildADMSCommand(id, command) {
     return commandString;
 }
 
-// function generateUserCommand(user) {
-//     if (!user.pin)
-// }
+function getDateAgo(timeString) {
+    const milliseconds = ms(timeString);  // Convert time string to milliseconds
+    if (milliseconds == undefined) throw new Error(`Invalid time string: ${timeString}`);
+    const currentDate = new Date();       // Get the current date and time
+    return new Date(currentDate.getTime() - milliseconds);  // Subtract the time
+}
 
-export { getTimezoneOffsetString, buildADMSCommand }
+export {
+    getTimezoneOffsetString,
+    buildADMSCommand,
+    getDateAgo,
+}

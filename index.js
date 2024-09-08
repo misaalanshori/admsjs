@@ -25,6 +25,6 @@ app.use("/api", [express.json(), APIRouter]);
 app.use("/adms", [express.json(), authenticatedRoute, ADMSRouter]);
 
 db.database.sync().then(()=>{
-    console.log(initScheduledJobs());
+    console.log(Object.keys(initScheduledJobs()));
     app.listen(port, () => console.log(`App listening on port http://localhost:${port}!`) );
 });
