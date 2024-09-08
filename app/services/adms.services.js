@@ -95,6 +95,17 @@ async function sendCommmand(serialNumbers, commands, exclusionMode = false, user
     return await ADMSModels.ADMSCommandBuffer.bulkCreate(commandObjects);
 }
 
+async function handleStoreFingerprint(serialNumber, data) {
+    ADMSModels.ADMSFingerprint.upsert(
+        {
+            pin: data.PIN,
+            fid: data.FID,
+            data: data,
+            serial_number: serialNumber
+        }
+    )
+}
+
 async function handleFingerprintSync(serialNumber, data) {
     const command = {
         header: [
@@ -126,6 +137,7 @@ export {
     handleMachineLogging,
     handleCommandResponseReceived,
     sendCommmand,
+    handleStoreFingerprint,
     handleFingerprintSync,
     handleUserSync,
 }

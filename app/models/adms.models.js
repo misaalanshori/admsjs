@@ -38,6 +38,29 @@ const ADMSModels = (database) => {
         }
     );
 
+    const ADMSFingerprint = database.define('admsFingerprint',
+        {
+            pin: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                primaryKey: true
+            },
+            fid: {
+                type: Sequelize.TINYINT,
+                allowNull: false,
+                primaryKey: true
+            },
+            data: {
+                type: Sequelize.JSON,
+                allowNull: false,
+            },
+            serial_number: { 
+                type: Sequelize.STRING,
+                allowNull: false
+            },
+        }
+    )
+
     const ADMSLogs = database.define('admsLogs',
         {
             serial_number: { 
@@ -74,6 +97,7 @@ const ADMSModels = (database) => {
         ADMSAttendance,
         ADMSLogs,
         ADMSCommandBuffer,
+        ADMSFingerprint,
     };
 }
 

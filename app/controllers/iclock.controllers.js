@@ -12,6 +12,7 @@ import {
     handleFingerprintSync,
     handleUserSync,
     handleMachineLogging,
+    handleStoreFingerprint,
 } from '../services/adms.services.js';
 import { buildADMSCommand, getTimezoneOffsetString } from '../utils/utils.js';
 
@@ -158,6 +159,7 @@ const IClockControllers = {
                         [key]: value
                     };
                 });
+                handleStoreFingerprint(serialNumber, data);
                 handleFingerprintSync(serialNumber, data);
                 return data;
             };

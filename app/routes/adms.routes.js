@@ -4,6 +4,7 @@ import ADMSCommandBufferController from "../controllers/admsCommandBuffer.contro
 import ADMSCommandUserControllers from "../controllers/admsCommandUser.controllers.js";
 import forceText from "../middlewares/forceText.middlewares.js";
 import ADMSLogsController from "../controllers/admsLogs.controllers.js";
+import ADMSFingerprint from "../controllers/admsFingerprint.controller.js";
 
 const ADMSRouter = Router();
 
@@ -19,5 +20,11 @@ ADMSRouter.get("/logs", ADMSLogsController.getAll);
 ADMSRouter.get("/logs/:id", ADMSLogsController.getOne);
 ADMSRouter.delete("/logs", ADMSLogsController.bulkDelete);
 ADMSRouter.delete("/logs/:id", ADMSLogsController.delete);
+
+ADMSRouter.get("/fingerprint/sync", ADMSFingerprint.sync);
+ADMSRouter.get("/fingerprint", ADMSFingerprint.getAll);
+ADMSRouter.get("/fingerprint/:pin/:fid", ADMSFingerprint.getOne);
+ADMSRouter.delete("/fingerprint/:pin/:fid", ADMSFingerprint.delete);
+
 
 export default ADMSRouter;
