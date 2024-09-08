@@ -79,12 +79,17 @@ const APIAttendanceHookController = {
      */
     create: async (req, res) => {
         try {
-            const {url, token} = req.body;
-            const attendanceHook = await APIModels.APIAttendanceHook.create({url, token, last_sync: new Date(), apiUserId: req.user.id});
+            const hooks = [].concat(req.body).map(v => ({
+                url: v.url,
+                token: v.token,
+                last_sync: new Date(),
+                apiUserId: req.user.id
+            }))
+            const attendanceHook = await APIModels.APIAttendanceHook.bulkCreate(hooks);
             return res.status(201).send(
                 {
                     error: false,
-                    message: "Attendance Hook created successfully",
+                    message: "Attendance Hooks created successfully",
                     data: attendanceHook,
                 }
             )

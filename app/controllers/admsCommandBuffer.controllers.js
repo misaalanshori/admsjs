@@ -85,44 +85,17 @@ const ADMSCommandBufferController = {
             );
         }
     },
-    
-    /**
-     * Create controller
-     * @param {Request} req - Express request object
-     * @param {Response} res - Express response object
-     */
-    create: async (req, res) => {
-        try {
-            const {serial_number} = req.params;
-            const {command} = req.body;
-            const commandCall = await ADMSModels.ADMSCommandBuffer.create({serial_number, command, status: "SUBMITTED", apiUserId: req.user.id});
-            return res.status(201).send(
-                {
-                    error: false,
-                    message: "Commmand call created successfully",
-                    data: commandCall,
-                }
-            )
-        } catch (err) {
-            return res.status(500).send(
-                {
-                    error: true,
-                    message: "An error occured: " + err.toString(),
-                    data: null,
-                }
-            );
-        }
-    },
 
     /**
      * Create Broadcast controller
      * @param {Request} req - Express request object
      * @param {Response} res - Express response object
      */
-    createBroadcast: async (req, res) => {
+    create: async (req, res) => {
         try {
             const {include, exclude} = req.query;
-            const {commands} = req.body;
+            const commands = [].concat(req.body)
+
             if (include && exclude) {
                 return res.status(400).send(
                     {
