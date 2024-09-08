@@ -31,7 +31,13 @@ const ADMSLogsController = {
             const logs = await ADMSModels.ADMSLogs.findAll({ where: whereCondition });
             res.status(200).json({ error: false, message: "Logs retrieved successfully", data: logs });
         } catch (error) {
-            res.status(500).json({ error: true, message: "Failed to retrieve logs", data: error.toString() });
+            return res.status(500).send(
+                {
+                    error: true,
+                    message: "An error occured: " + error.toString(),
+                    data: null,
+                }
+            );
         }
     },
 
@@ -45,7 +51,13 @@ const ADMSLogsController = {
                 res.status(404).json({ error: true, message: "Log not found", data: null });
             }
         } catch (error) {
-            res.status(500).json({ error: true, message: "Failed to retrieve log", data: error.toString() });
+            return res.status(500).send(
+                {
+                    error: true,
+                    message: "An error occured: " + error.toString(),
+                    data: null,
+                }
+            );
         }
     },
 
@@ -59,7 +71,13 @@ const ADMSLogsController = {
                 res.status(404).json({ error: true, message: "Log not found", data: null });
             }
         } catch (error) {
-            res.status(500).json({ error: true, message: "Failed to delete log", data: error.toString() });
+            return res.status(500).send(
+                {
+                    error: true,
+                    message: "An error occured: " + error.toString(),
+                    data: null,
+                }
+            );
         }
     },
 
@@ -79,7 +97,13 @@ const ADMSLogsController = {
             const deletedLogs = await ADMSModels.ADMSLogs.destroy({ where: whereCondition });
             res.status(200).json({ error: false, message: "Logs deleted successfully", data: { count: deletedLogs } });
         } catch (error) {
-            res.status(500).json({ error: true, message: "Failed to delete logs", data: error.toString() });
+            return res.status(500).send(
+                {
+                    error: true,
+                    message: "An error occured: " + error.toString(),
+                    data: null,
+                }
+            );
         }
     }
 };
