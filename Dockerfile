@@ -1,8 +1,8 @@
-FROM node:20.12.0-alpine
+FROM node:20.12.0
 
 # Retrieve wait-for-it.sh script
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /wait-for-it.sh
-RUN apk add --no-cache bash && chmod +x /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
 
 RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
 
