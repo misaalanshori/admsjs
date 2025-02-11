@@ -39,7 +39,7 @@ export default async function batchedAttendanceHookHandler() {
                     body: JSON.stringify(hookData),
                 }
             );
-            if (200 <= hookRequest.status < 300) {
+            if (hookRequest.status >= 200 && hookRequest.status < 300) {
                 console.log(`${new Date().toISOString()} [INFO] Hook Call to ${hook.url} succeded! (${hookRequest.status}, Count: ${hookData.length})`)
                 hook.last_sync = attendanceData.at(-1).createdAt;
                 hook.save();
