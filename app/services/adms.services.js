@@ -20,6 +20,7 @@ async function checkMachineWhitelist(serial_number) {
 
 async function handleMachineHeartbeat(serial_number) {
     const machine = await ADMSModels.ADMSMachine.findOne({ where: {serial_number} });
+    const last_seen = machine?.last_seen ?? null;
     if (machine) {
         machine.last_seen = new Date();
         machine.save()
@@ -29,6 +30,7 @@ async function handleMachineHeartbeat(serial_number) {
             last_seen: new Date(),
         })
     }
+    return last_seen;
 }
 
 async function handleAttendanceReceived(serialNumber, admsAttendance) {

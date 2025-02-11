@@ -69,13 +69,13 @@ const IClockControllers = {
      */
     handshake: async (req, res) => {
         const serialNumber = req.query.SN;
-        handleMachineHeartbeat(serialNumber);
+        const last_seen = await handleMachineHeartbeat(serialNumber) ?? new Date();
         const response = [
             `GET OPTION FROM: ${serialNumber}`,
             `STAMP=9999`,
-            `ATTLOGSTAMP=${Math.floor(Date.now() / 1000)}`,
-            `OPERLOGStamp=${Math.floor(Date.now() / 1000)}`,
-            `ATTPHOTOStamp=${Math.floor(Date.now() / 1000)}`,
+            `ATTLOGSTAMP=${Math.floor(last_seen.getTime() / 1000)}`,
+            `OPERLOGStamp=${Math.floor(last_seen.getTime() / 1000)}`,
+            `ATTPHOTOStamp=${Math.floor(last_seen.getTime() / 1000)}`,
             `ErrorDelay=30`,
             `Delay=10`,
             `TransTimes=00:00;23:59`,
