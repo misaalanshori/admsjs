@@ -37,6 +37,7 @@ export default async function batchedAttendanceHookHandler() {
                         'Authorization': `Bearer ${hook.token}`
                     },
                     body: JSON.stringify(hookData),
+                    signal: AbortSignal.timeout(60 * 1000)
                 }
             );
             if (hookRequest.status >= 200 && hookRequest.status < 300) {
@@ -44,7 +45,17 @@ export default async function batchedAttendanceHookHandler() {
                 hook.last_sync = attendanceData.at(-1).createdAt;
                 hook.save();
             } else {
-                console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${hookRequest.status})`)
+                // console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${hookRequest.status})`)
+                let errorResponse;
+                try {
+                    errorResponse = await hookRequest.text(); // Try to read response as text
+                    if (hookRequest.headers.get('content-type')?.includes('application/json')) {
+                         errorResponse = JSON.parse(errorResponse); // Parse if JSON
+                    }
+                } catch (e) {
+                    errorResponse = 'Failed to read response';
+                }
+                console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${hookRequest.status}) Response:`, errorResponse, hookData);
             }
         } catch (err) {
             console.log(`${new Date().toISOString()} [ERROR] Hook Call to ${hook.url} failed! (${err.toString()})`)

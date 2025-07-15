@@ -136,9 +136,12 @@ const APIAuthControllers = {
     updateUser: async (req, res) => {
         try {
             const { username, password } = req.body;
-            req.user.username = username;
-            req.user.password = password;
-            req.user.save();
+            if (username) {
+                req.user.username = username;
+            }
+            if (password) {
+                req.user.password_hash = await bcrypt.hash(password, 8);
+            }
             res.status(200).send({
                 error: false,
                 message: "User updated successfully",

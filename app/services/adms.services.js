@@ -14,8 +14,6 @@ async function checkMachineWhitelist(serial_number) {
             timezone: +process.env.DEFAULT_TZ
         }
     }
-    ;
-
 }
 
 async function handleMachineHeartbeat(serial_number) {
