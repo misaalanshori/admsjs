@@ -142,6 +142,7 @@ const APIAuthControllers = {
             if (password) {
                 req.user.password_hash = await bcrypt.hash(password, 8);
             }
+            await req.user.save();
             res.status(200).send({
                 error: false,
                 message: "User updated successfully",
